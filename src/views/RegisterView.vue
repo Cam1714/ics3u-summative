@@ -1,9 +1,11 @@
 <script setup>
+import Footer from "../components/Footer.vue";
+import Header from "../components/Header.vue";
 import { ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import { useStore } from "../stores";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebase";
-import { useRouter } from 'vue-router';
-import { useStore } from "../stores"
 
 const firstName = ref('');
 const lastName = ref('');
@@ -13,24 +15,45 @@ const confirmPassword = ref('');
 const router = useRouter();
 const store = useStore();
 
+
 async function registerByEmail() {
+  if (password1.value !== password2.value) {
+    alert("Passwords do not match!");
+    return;
+  }
+
   try {
-    const user = (await createUserWithEmailAndPassword(auth, email.value, password.value)).user;
-    await updateProfile(user, { displayName: `${firstName.value} ${lastName.value}` });
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password1.value);
+    const user = userCredential.user;
+
+    await updateProfile(user, { displayName: `${name.value} ${lastName.value}` });
+
     store.user = user;
+
     router.push("/movies");
   } catch (error) {
-    alert("There was an error creating a user with email!");
+    console.error(error);
+    alert("An error occured creating a user with email!");
   }
 }
 
 async function registerByGoogle() {
+
+  if (store.user) {
+    router.push("/login");
+    return; 
+  }
+
   try {
-    const user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+    const userCredential = await signInWithPopup(auth, new GoogleAuthProvider());
+    const user = userCredential.user;
+
     store.user = user;
+
     router.push("/movies");
   } catch (error) {
-    alert("There was an error creating a user with Google!");
+    console.error(error);
+    alert("An error occured creating a user with Google!");
   }
 }
 </script>

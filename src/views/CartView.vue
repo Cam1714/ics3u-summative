@@ -1,17 +1,27 @@
 <script setup>
 import { useStore } from '../stores';
+import { useRouter } from "vue-router";
+
 const store = useStore();
+const router = useRouter();
+
 </script>
 
 <template>
-  <div class="cart">
-    <h1>Your Cart</h1>
-    <div class="item" v-for="([key, value]) in store.cart" :key="key">
-      <img :src="`https://image.tmdb.org/t/p/w500${value.url}`" alt="Movie Poster" />
-      <h2>{{ value.title }}</h2>
-      <button @click="store.removeFromCart(key)">Remove</button>
+    <div class="cart">
+        <h1>Shopping Cart</h1>
+        <div class="item" v-for="([key, value]) in store.cart">
+            <img :src="`https://image.tmdb.org/t/p/w500${value.url}`" />
+            <h1>{{ value.title }}</h1>
+            <button @click="store.removeFromCart(key)">Remove</button>
+        </div>
+        <div v-if="store.checkoutCompleted" class="message">
+            <p>Enjoy your purchase!</p>
+        </div>
+        <div class="checkout">
+            <button @click="store.clearCart()">Checkout</button>
+        </div>
     </div>
-  </div>
 </template>
 
 <style scoped>

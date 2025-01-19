@@ -17,7 +17,7 @@ const loginByEmail = async () => {
     router.push("/movies");
   } catch (error) {
     console.log(error);
-    alert("There was an error signing in with email!");
+    alert("An error occured signing in with email!");
   }
 };
 
@@ -27,7 +27,7 @@ const loginByGoogle = async () => {
     store.user = user;
     router.push("/movies");
   } catch (error) {
-    alert("There was an error signing in with Google!");
+    alert("An error occured signing in with Google!");
   }
 };
 </script>
