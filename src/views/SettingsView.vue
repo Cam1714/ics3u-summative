@@ -1,48 +1,89 @@
 <script setup>
-import { useRegistrationStore } from '../stores';
-import { computed } from 'vue';
+import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
+import { useRouter } from "vue-router";
+import { useStore } from '../stores';
+import { updatePassword, updateProfile } from "firebase/auth";
+import { auth } from "../firebase";
+import { ref } from 'vue';
 
-const registrationStore = useRegistrationStore();
+const store = useStore();
+const router = useRouter();
+const name = ref(store.user?.displayName?.split(" ")[0] || '');
+const lastName = ref(store.user?.displayName?.split(" ")[1] || '');
+const email = ref(store.user?.email || '');
+const password = ref('');
 
-const firstName = computed({
-  get: () => registrationStore.firstName,
-  set: (value) => registrationStore.firstName = value,
-});
+const isEmailProvider = store.user?.providerData.some(provider => provider.providerId === 'password');
 
-const lastName = computed({
-  get: () => registrationStore.lastName,
-  set: (value) => registrationStore.lastName = value,
-});
+const changeName = async () => {
+  if (!isEmailProvider) {
+    alert("You can only change your information if you signed in through email.");
+    return;
+  }
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      await updateProfile(user, { displayName: `${name.value} ${lastName.value}` });
 
-const email = computed({
-  get: () => registrationStore.email,
-});
+      store.user = user;
+      alert("Name updated successfully!");
+    }
+  } catch (error) {
+    console.error("Error occurred during name change:", error);
+    alert("There was an error updating the name. Please try again.");
+  }
+};
 
-const updateProfileHandler = (event) => {
-  event.preventDefault();
-  registrationStore.setRegistrationData({
-    firstName: firstName.value,
-    lastName: lastName.value,
-    email: email.value,
-  });
-
-  alert('Profile updated successfully!');
+const changePassword = async () => {
+  if (!isEmailProvider) {
+    alert("You can only change your password if you signed in through email.");
+    return;
+  }
+  try {
+    const user = auth.currentUser;
+    await updatePassword(user, password.value);
+    alert("Password updated successfully!");
+    password.value = '';
+  } catch (error) {
+    alert("There was an error updating the password. Please try again.");
+  }
 };
 </script>
 
 <template>
+  <Header />
   <div class="form-container">
-    <h2>User Settings</h2>
-    <form @submit.prevent="updateProfileHandler">
-      <label for="firstName">First Name:</label>
-      <input type="text" id="firstName" v-model="firstName" class="input-field" /><br /><br />
-      <label for="lastName">Last Name:</label>
-      <input type="text" id="lastName" v-model="lastName" class="input-field" /><br /><br />
-      <label for="email">Email:</label>
-      <input type="email" id="email" v-model="email" class="input-field" readonly /><br /><br />
-      <button type="submit" class="button">Save Changes</button>
+    <h1>User Profile</h1>
+    <form @submit.prevent="changeName" class="form">
+      <div class="input-container">
+        <p>{{ `First Name: ${name}` }}</p>
+        <input v-model="name" type="text" id="name" class="input-field" />
+        <button type="submit" class="changeName">Change</button>
+      </div>
+    </form>
+    <form @submit.prevent="changeName" class="form">
+      <div class="input-container">
+        <p>{{ `Last Name: ${lastName}` }}</p>
+        <input v-model="lastName" type="text" id="lastName" class="input-field" />
+        <button type="submit" class="changeName">Change</button>
+      </div>
+    </form>
+    <div class="email">
+      <div class="input-container">
+        <p>{{ `Email:` }}</p>
+        <input v-model="email" type="email" id="email" class="input-field" readonly />
+      </div>
+    </div>
+    <form @submit.prevent="changePassword" class="form">
+      <div class="input-container">
+        <p>New Password</p>
+        <input v-model="password" type="password" id="password" class="input-field" required />
+        <button type="submit" class="changeName">Change Password</button>
+      </div>
     </form>
   </div>
+  <Footer />
 </template>
 
 <style scoped>

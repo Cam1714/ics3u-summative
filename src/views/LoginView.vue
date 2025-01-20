@@ -1,33 +1,46 @@
 <script setup>
+import Header from "../components/Header.vue";
+import Footer from "../components/Footer.vue";
 import { RouterLink, useRouter } from 'vue-router';
 import { ref } from 'vue';
-import { useStore } from "../stores"
+import { useStore } from "../stores";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../firebase"
+import { auth } from "../firebase";
+
 
 const store = useStore();
 const router = useRouter();
+
 const email = ref('');
 const password = ref('');
 
-const loginByEmail = async () => {
+const loginWithEmail = async () => {
   try {
-    const user = (await signInWithEmailAndPassword(auth, email.value, password.value)).user;
-    store.user = user;
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+    store.user = userCredential.user;
     router.push("/movies");
   } catch (error) {
-    console.log(error);
-    alert("An error occured signing in with email!");
+    console.error(error);
+    alert("Oops! Something went wrong with email login.");
   }
 };
 
-const loginByGoogle = async () => {
+
+const loginWithGoogle = async () => {
   try {
-    const user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
-    store.user = user;
-    router.push("/movies");
+    const userCredential = await signInWithPopup(auth, new GoogleAuthProvider());
+    const user = userCredential.user;
+
+    if (store.user && store.user.email === user.email) {
+      store.user = user;
+      router.push("/movies");
+    } else {
+      alert("It seems this account is not registered. Please sign up first.");
+      router.push("/register");
+    }
   } catch (error) {
-    alert("An error occured signing in with Google!");
+    console.error(error);
+    alert("Oops! Something went wrong with Google login.");
   }
 };
 </script>
@@ -38,12 +51,12 @@ const loginByGoogle = async () => {
     <div class="overlay">
       <div class="form-container">
         <h2>Login to Your Account</h2>
-        <form @submit.prevent="loginByEmail">
-          <input v-model="email" type="email" placeholder="Email" class="input-field" required />
-          <input v-model="password" type="password" placeholder="Password" class="input-field" required />
-          <button type="submit" class="button login">Login</button>
+        <form @submit.prevent="loginWithEmail">
+          <input v-model="email" type="email" placeholder="Your Email Address" class="input-field" required />
+          <input v-model="password" type="password" placeholder="Your Password" class="input-field" required />
+          <button @click="loginWithEmail()" type="submit" class="button login">Login with Email</button>
         </form>
-      <button @click="loginByGoogle()" type="submit" class="button login">Login by Google</button>
+        <button @click="loginWithGoogle()" type="button" class="button login">Login with Google</button>
       </div>
     </div>
   </div>

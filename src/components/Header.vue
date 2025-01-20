@@ -1,8 +1,11 @@
 <script setup>
 import { RouterLink } from 'vue-router';
-import { useRegistrationStore } from '../stores';
+import { useStore } from '../stores';
+const store = useStore();
 
-const registrationStore = useRegistrationStore();
+const logout = () => {
+  store.logout();
+};
 </script>
 
 <template>
@@ -15,11 +18,12 @@ const registrationStore = useRegistrationStore();
             <RouterLink to="/login" class="button login">Login</RouterLink>
             <RouterLink to="/register" class="button register">Register</RouterLink>
           </li>
-          <li v-if="registrationStore.email">
-            <h1 class="email">{{ `Hello ${registrationStore.firstName}!` }}</h1>
-            <RouterLink to="/settings" class="button setting">Settings</RouterLink>
-            <RouterLink to="/" class="button setting">Logout</RouterLink>
+          <li v-if="$route.path === '/movies' || $route.path === '/setting' || $route.path === '/cart'">
+            <h1 class="email">{{ `Hello ${store.user?.displayName}!` }}</h1>
+            <RouterLink to="/setting" class="button setting">Setting</RouterLink>
             <RouterLink to="/cart" class="button cart">Cart</RouterLink>
+            <RouterLink to="/movies" class="button setting">Movies</RouterLink>
+            <button @click="logout" class="button setting">Logout</button>
           </li>
           <li v-if="$route.path === '/login' || $route.path === '/register'">
             <RouterLink to="/" class="button setting">Home</RouterLink>

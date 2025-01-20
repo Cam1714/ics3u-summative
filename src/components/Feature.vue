@@ -23,13 +23,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="movie-gallery">
-    <div v-if="response" class="movie-list">
-      <div v-for="number in numbers" :key="response.data.results[number].id" class="movie-card">
-        <img :src="`https://image.tmdb.org/t/p/w500${response.data.results[number].poster_path}`" alt="Movie Poster"
-          class="movie-poster" />
-        <p class="movie-title">{{ response.data.results[number].title }}</p>
-      </div>
+  <div class="text">Featured Movies</div>
+  <div v-if="response" class="movie-container">
+    <div v-for="number in numbers" :key="response.data.results[number].id" class="movie-card">
+      <img :src="`https://image.tmdb.org/t/p/w500${response.data.results[number].poster_path}`" alt="Movie Poster"
+        class="movie-poster" />
+      <p class="movie-title">{{ response.data.results[number].title }}</p>
     </div>
   </div>
 </template>
